@@ -2,8 +2,9 @@ from classes.room import Room
 
 class Dwellings:
 
-    def __init__(self, building_number, number_of_room = 10, number_of_beds_per_room = 8):
+    def __init__(self, building_number, base_name, number_of_room = 10, number_of_beds_per_room = 8):
         self.building_number = building_number
+        self.base_name = base_name
         self.number_of_room = number_of_room
         self.number_of_beds_per_room = number_of_beds_per_room
 
@@ -26,6 +27,9 @@ class Dwellings:
                     return
 
 
-
+    def empty_rooms(self):
+        for room in self.list_of_rooms:
+            room.space = "empty"
+            room.number_of_beds = self.number_of_beds_per_room
 
 

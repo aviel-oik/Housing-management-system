@@ -1,5 +1,3 @@
-
-
 class Soldier:
 
     def __init__(self, id, first_name, last_name, gender, city_of_residence, distance_from_base, assignment_status = False):
