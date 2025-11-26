@@ -1,3 +1,10 @@
+'''
+Please, I didn’t have time to finish step 3,
+but I did most of it,
+so please take a look at the fill_db() and initializeScheme() functions.
+'''
+
+
 import csv
 import uvicorn
 import sqlite3
@@ -25,6 +32,7 @@ async def assignWithCsv(csvFile: UploadFile = File(...)):
         if valid_input(row):
             seven_sheaves.add_soldier(Soldier(row["מספר אישי"], row["שם פרטי"], row["שם משפחה"], row["מין"], row["עיר מגורים"], int(row["מרחק מהבסיס"])))
     seven_sheaves.assign()
+    # fill_db()
     return {
             "number of assigned soldiers" : len(seven_sheaves.list_of_assigned_soldiers),
             "number of unassigned soldiers" : len(seven_sheaves.list_of_unassigned_soldiers),
@@ -44,6 +52,27 @@ def valid_input(row):
     if not row["מרחק מהבסיס"].isdigit():
         return False
     return True
+
+def fill_db():
+    conn = sqlite3.connect("data.db")
+    cursor = conn.cursor()
+    for s in seven_sheaves.list_of_unassigned_soldiers:
+        cursor.execute("""INSERT INTO Unassigned_Soldiers(id, first_name, last_name, gender, city_of_residence, distance_from_base, assignment_status, dwellings_assigned, room_assigned)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""", (s.id, s.first_name, s.last_name, s.gender, s.city_of_residence, s.distance_from_base, s.assignment_status, s.dwellings_assigned, s.room_assigned,))
+
+    for s in seven_sheaves.list_of_assigned_soldiers:
+        cursor.execute("""INSERT INTO Assigned_Soldiers(id, first_name, last_name, gender, city_of_residence, distance_from_base, assignment_status, dwellings_assigned, room_assigned)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       (s.id, s.first_name, s.last_name, s.gender, s.city_of_residence, s.distance_from_base,
+                        s.assignment_status, s.dwellings_assigned, s.room_assigned,))
+    cursor.execute("""INSERT INTO Base(name) VALUES (?) """, (seven_sheaves.name,))
+    for dwelling in seven_sheaves.list_of_dwellings:
+        cursor.execute("""INSERT INTO Dwellings VALUES (?,?) """, (dwelling.building_number, dwelling.base_name,))
+        for room in dwelling.list_of_rooms:
+            cursor.execute("""INSERT INTO Room VALUES(?, ?)""",(room.room_num, room.space,))
+    conn.commit()
+    conn.close()
+
 
 
 @app.get("/space")
@@ -104,7 +133,7 @@ def initializeScheme():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Unassigned_Soldiers(
         id TEXT PRIMARY KEY,
-        first_name TEXT
+        first_name TEXT,
         last_name TEXT,
         gender TEXT,
         city_of_residence TEXT,
@@ -117,7 +146,7 @@ def initializeScheme():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS Assigned_Soldiers(
         id TEXT PRIMARY KEY,
-        first_name TEXT
+        first_name TEXT,
         last_name TEXT,
         gender TEXT,
         city_of_residence TEXT,
